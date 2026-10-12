@@ -14,7 +14,7 @@ import { profile } from 'hafas-client/p/oebb/index.js';
 
 const FROM = '8000261'; // München Hbf (EVA number)
 const TO = '8000152'; // Hannover Hbf (EVA number)
-const TRAVEL_DATE = '2026-12-18';
+const TRAVEL_DATE = '2026-12-01';
 const DEPARTURE = new Date(`${TRAVEL_DATE}T08:00:00+01:00`);
 const RESULTS = 8;
 
