@@ -1,0 +1,13 @@
+{
+  "name": "db-connection-check",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily read-only check whether München Hbf → Hannover Hbf connections on 2026-12-18 are published in the timetable.",
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check-connection.mjs"
+  },
+  "dependencies": {
+    "hafas-client": "^6.2.0"
+  }
+}

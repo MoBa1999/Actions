@@ -1,0 +1,64 @@
+name: DB Connection Check — München → Hannover (18.12.2026)
+
+# Read-only daily check. Nothing is ever booked or bought —
+# the script only queries the timetable and mails you the status.
+on:
+  schedule:
+    # Daily at 07:00 UTC (= 08:00 Berlin time in winter)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # manual run from the Actions tab
+
+jobs:
+  check-connection:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check München Hbf → Hannover Hbf on 18.12.2026
+        id: check
+        run: node scripts/check-connection.mjs
+
+      - name: Upload status report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-report-${{ github.run_number }}
+          path: status_report.md
+          retention-days: 30
+
+      - name: Send daily status mail
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: >-
+            ${{ steps.check.outputs.status == 'FOUND' && '✅ DB: Verbindungen München → Hannover am 18.12. gefunden!' || steps.check.outputs.status == 'UNKNOWN' && '⚠️ DB-Check: Abfrage fehlgeschlagen' || '⏳ DB: 18.12. München → Hannover noch nicht verfügbar' }}
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          body: |
+            Täglicher DB-Statusbericht (nur Fahrplanabfrage — keine Buchung!).
+
+            Strecke: München Hbf → Hannover Hbf am 18.12.2026 (Abfahrt ab 08:00)
+            Status: ${{ steps.check.outputs.status }}
+            Verbindungen tagsüber (05–22 Uhr): ${{ steps.check.outputs.daytime_count }}
+            Verbindungen gesamt: ${{ steps.check.outputs.total_count }}
+
+            Details siehe Anhang (status_report.md).
+            Selbst prüfen & buchen: https://www.bahn.de
+
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          attachments: status_report.md
