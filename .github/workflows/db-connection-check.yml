@@ -6,6 +6,8 @@ on:
   schedule:
     # Daily at 07:00 UTC (= 08:00 Berlin time in winter)
     - cron: '0 7 * * *'
+    # Daily at 16:00 UTC (= 17:00 Berlin time in winter/CET, Oct–Mar)
+    - cron: '0 16 * * *'
   workflow_dispatch: # manual run from the Actions tab
 
 jobs:
